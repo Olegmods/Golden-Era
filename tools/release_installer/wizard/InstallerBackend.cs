@@ -898,6 +898,20 @@ internal static class InstallerBackend
             DisableUnityLogListening(Path.Combine(targetRoot, "BepInEx", "config", "BepInEx.cfg"));
         }
 
+        // Bundled Unity base library zip ({VERSION}.zip). BepInEx uses a zip already in
+        // unity-libs instead of downloading it on first launch, which can stall forever behind
+        // a firewall or network filter. Older payloads don't have it; BepInEx then downloads as before.
+        var unityLibsPayload = Path.Combine(bepinexPayload, "unity-libs");
+        if (Directory.Exists(unityLibsPayload))
+        {
+            var unityLibsTarget = Path.Combine(targetRoot, "BepInEx", "unity-libs");
+            Directory.CreateDirectory(unityLibsTarget);
+            foreach (var zip in Directory.EnumerateFiles(unityLibsPayload, "*.zip"))
+            {
+                MoveFile(zip, Path.Combine(unityLibsTarget, Path.GetFileName(zip)));
+            }
+        }
+
         Directory.CreateDirectory(Path.Combine(targetRoot, "BepInEx", "plugins"));
         MoveDirectory(pluginPayload, Path.Combine(targetRoot, PluginRelativePath));
 
